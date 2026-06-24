@@ -1,12 +1,24 @@
 from flask import Flask
+from kerykeion import AstrologicalSubject
 
 app = Flask(__name__)
 
 @app.route("/")
 def home():
+
+    person = AstrologicalSubject(
+        "Test",
+        year=1957,
+        month=1,
+        day=20,
+        hour=9,
+        minute=0,
+        city="Glasgow"
+    )
+
     return {
-        "status": "working",
-        "message": "Astrology API online"
+        "sun": person.sun.sign,
+        "moon": person.moon.sign
     }
 
 if __name__ == "__main__":
