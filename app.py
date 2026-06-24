@@ -17,8 +17,9 @@ def home():
     )
 
     return {
-        "sun": person.sun.sign,
-        "moon": person.moon.sign
+        "sun": str(person.sun.sign),
+        "moon": str(person.moon.sign),
+        "ascendant": str(person.first_house.sign)
     }
 
 if __name__ == "__main__":
