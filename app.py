@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from kerykeion import AstrologicalSubject
 
 app = Flask(__name__)
@@ -6,14 +6,21 @@ app = Flask(__name__)
 @app.route("/")
 def home():
 
+    year = int(request.args.get("year"))
+    month = int(request.args.get("month"))
+    day = int(request.args.get("day"))
+    hour = int(request.args.get("hour"))
+    minute = int(request.args.get("minute"))
+    city = request.args.get("city")
+
     person = AstrologicalSubject(
-        "Test",
-        year=1957,
-        month=1,
-        day=20,
-        hour=9,
-        minute=0,
-        city="Glasgow"
+        "Client",
+        year=year,
+        month=month,
+        day=day,
+        hour=hour,
+        minute=minute,
+        city=city
     )
 
     return {
