@@ -1,5 +1,6 @@
 from flask import Flask, request
 import swisseph as swe
+from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
 
@@ -17,6 +18,8 @@ SIGNS = [
     "Aquarius",
     "Pisces"
 ]
+
+geolocator = Nominatim(user_agent="astrology_api")
 
 
 def get_sign(longitude):
@@ -40,6 +43,19 @@ def chart():
     hour = int(request.args["hour"])
     minute = int(request.args["minute"])
 
+    city = request.args["city"]
+    country = request.args["country"]
+
+    location = geolocator.geocode(f"{city}, {country}")
+
+    if location is None:
+        return {
+            "error": f"Could not find '{city}, {country}'"
+        }, 400
+
+    latitude = location.latitude
+    longitude = location.longitude
+
     ut = hour + (minute / 60.0)
 
     jd = swe.julday(year, month, day, ut)
@@ -61,20 +77,13 @@ def chart():
 
     for name, planet in planets.items():
 
-        longitude = swe.calc_ut(jd, planet)[0][0]
+        lon = swe.calc_ut(jd, planet)[0][0]
 
         result[name] = {
-            "sign": get_sign(longitude),
-            "degree": round(longitude % 30, 4),
-            "longitude": round(longitude, 6)
+            "sign": get_sign(lon),
+            "degree": round(lon % 30, 4),
+            "longitude": round(lon, 6)
         }
-
-    #
-    # ASCENDANT + MIDHEAVEN
-    #
-
-    latitude = float(request.args["lat"])
-    longitude = float(request.args["lon"])
 
     houses = swe.houses_ex(
         jd,
@@ -96,6 +105,13 @@ def chart():
         "sign": get_sign(mc),
         "degree": round(mc % 30, 4),
         "longitude": round(mc, 6)
+    }
+
+    result["location"] = {
+        "city": city,
+        "country": country,
+        "latitude": latitude,
+        "longitude": longitude
     }
 
     return result
