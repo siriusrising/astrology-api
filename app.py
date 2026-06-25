@@ -1,48 +1,48 @@
-from flask import Flask, request, jsonify
-from kerykeion import AstrologicalSubject
+from flask import Flask
+import swisseph as swe
 
 app = Flask(__name__)
+
+SIGNS = [
+    "Aries",
+    "Taurus",
+    "Gemini",
+    "Cancer",
+    "Leo",
+    "Virgo",
+    "Libra",
+    "Scorpio",
+    "Sagittarius",
+    "Capricorn",
+    "Aquarius",
+    "Pisces"
+]
 
 
 @app.route("/")
 def home():
-    return jsonify({
-        "status": "online",
-        "message": "Astrology API ready"
-    })
+    return {
+        "status": "Swiss Ephemeris loaded"
+    }
 
 
-@app.route("/chart")
-def chart():
+@app.route("/sun")
+def sun():
 
-    try:
-        year = int(request.args.get("year"))
-        month = int(request.args.get("month"))
-        day = int(request.args.get("day"))
-        hour = int(request.args.get("hour"))
-        minute = int(request.args.get("minute"))
-        city = request.args.get("city")
+    # 20 Jan 1957 09:00 UT
+    jd = swe.julday(1957, 1, 20, 9.0)
 
-        person = AstrologicalSubject(
-            "Client",
-            year=year,
-            month=month,
-            day=day,
-            hour=hour,
-            minute=minute,
-            city=city
-        )
+    longitude = swe.calc_ut(jd, swe.SUN)[0][0]
 
-        return jsonify({
-            "sun": str(person.sun.sign),
-            "moon": str(person.moon.sign),
-            "ascendant": str(person.first_house.sign)
-        })
+    sign = SIGNS[int(longitude // 30)]
 
-    except Exception as e:
-        return jsonify({
-            "error": str(e)
-        }), 500
+    degree = longitude % 30
+
+    return {
+        "longitude": longitude,
+        "sign": sign,
+        "degree": degree
+    }
 
 
 if __name__ == "__main__":
