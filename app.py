@@ -26,8 +26,8 @@ def get_sign(longitude):
 @app.route("/")
 def home():
     return {
-        "status": "Swiss Ephemeris API",
-        "message": "Running"
+        "status": "online",
+        "message": "Swiss Ephemeris API running"
     }
 
 
@@ -40,17 +40,38 @@ def chart():
     hour = int(request.args["hour"])
     minute = int(request.args["minute"])
 
+    # Decimal Universal Time
     ut = hour + (minute / 60.0)
 
+    # Julian Day
     jd = swe.julday(year, month, day, ut)
 
-    sun = swe.calc_ut(jd, swe.SUN)[0][0]
-
-    return {
-        "sun": get_sign(sun),
-        "sunLongitude": sun,
-        "sunDegree": sun % 30
+    planets = {
+        "sun": swe.SUN,
+        "moon": swe.MOON,
+        "mercury": swe.MERCURY,
+        "venus": swe.VENUS,
+        "mars": swe.MARS,
+        "jupiter": swe.JUPITER,
+        "saturn": swe.SATURN,
+        "uranus": swe.URANUS,
+        "neptune": swe.NEPTUNE,
+        "pluto": swe.PLUTO
     }
+
+    result = {}
+
+    for name, planet in planets.items():
+
+        longitude = swe.calc_ut(jd, planet)[0][0]
+
+        result[name] = {
+            "sign": get_sign(longitude),
+            "degree": round(longitude % 30, 4),
+            "longitude": round(longitude, 6)
+        }
+
+    return result
 
 
 if __name__ == "__main__":
