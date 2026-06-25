@@ -40,10 +40,8 @@ def chart():
     hour = int(request.args["hour"])
     minute = int(request.args["minute"])
 
-    # Decimal Universal Time
     ut = hour + (minute / 60.0)
 
-    # Julian Day
     jd = swe.julday(year, month, day, ut)
 
     planets = {
@@ -70,6 +68,35 @@ def chart():
             "degree": round(longitude % 30, 4),
             "longitude": round(longitude, 6)
         }
+
+    #
+    # ASCENDANT + MIDHEAVEN
+    #
+
+    latitude = float(request.args["lat"])
+    longitude = float(request.args["lon"])
+
+    houses = swe.houses_ex(
+        jd,
+        latitude,
+        longitude,
+        b'P'
+    )
+
+    asc = houses[1][0]
+    mc = houses[1][1]
+
+    result["ascendant"] = {
+        "sign": get_sign(asc),
+        "degree": round(asc % 30, 4),
+        "longitude": round(asc, 6)
+    }
+
+    result["midheaven"] = {
+        "sign": get_sign(mc),
+        "degree": round(mc % 30, 4),
+        "longitude": round(mc, 6)
+    }
 
     return result
 
