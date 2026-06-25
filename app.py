@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import swisseph as swe
 
 app = Flask(__name__)
@@ -19,29 +19,37 @@ SIGNS = [
 ]
 
 
+def get_sign(longitude):
+    return SIGNS[int(longitude // 30)]
+
+
 @app.route("/")
 def home():
     return {
-        "status": "Swiss Ephemeris loaded"
+        "status": "Swiss Ephemeris API",
+        "message": "Running"
     }
 
 
-@app.route("/sun")
-def sun():
+@app.route("/chart")
+def chart():
 
-    # 20 Jan 1957 09:00 UT
-    jd = swe.julday(1957, 1, 20, 9.0)
+    year = int(request.args["year"])
+    month = int(request.args["month"])
+    day = int(request.args["day"])
+    hour = int(request.args["hour"])
+    minute = int(request.args["minute"])
 
-    longitude = swe.calc_ut(jd, swe.SUN)[0][0]
+    ut = hour + (minute / 60.0)
 
-    sign = SIGNS[int(longitude // 30)]
+    jd = swe.julday(year, month, day, ut)
 
-    degree = longitude % 30
+    sun = swe.calc_ut(jd, swe.SUN)[0][0]
 
     return {
-        "longitude": longitude,
-        "sign": sign,
-        "degree": degree
+        "sun": get_sign(sun),
+        "sunLongitude": sun,
+        "sunDegree": sun % 30
     }
 
 
