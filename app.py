@@ -56,27 +56,27 @@ def chart():
     latitude = location.latitude
     longitude = location.longitude
 
-    ut = hour + (minute / 60.0)
+        ut = hour + (minute / 60.0)
 
     jd = swe.julday(year, month, day, ut)
 
-  planets = {
-    "sun": swe.SUN,
-    "moon": swe.MOON,
-    "mercury": swe.MERCURY,
-    "venus": swe.VENUS,
-    "mars": swe.MARS,
-    "jupiter": swe.JUPITER,
-    "saturn": swe.SATURN,
-    "uranus": swe.URANUS,
-    "neptune": swe.NEPTUNE,
-    "pluto": swe.PLUTO,
+    planets = {
+        "sun": swe.SUN,
+        "moon": swe.MOON,
+        "mercury": swe.MERCURY,
+        "venus": swe.VENUS,
+        "mars": swe.MARS,
+        "jupiter": swe.JUPITER,
+        "saturn": swe.SATURN,
+        "uranus": swe.URANUS,
+        "neptune": swe.NEPTUNE,
+        "pluto": swe.PLUTO,
 
-    # Modern astrology points
-    "chiron": swe.CHIRON,
-    "north_node": swe.TRUE_NODE,
-    "lilith": swe.MEAN_APOG
-}
+        # Modern astrology points
+        "chiron": swe.CHIRON,
+        "north_node": swe.TRUE_NODE,
+        "lilith": swe.MEAN_APOG
+    }
 
     result = {}
 
