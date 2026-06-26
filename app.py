@@ -56,7 +56,7 @@ def chart():
     latitude = location.latitude
     longitude = location.longitude
 
-        ut = hour + (minute / 60.0)
+    ut = hour + (minute / 60.0)
 
     jd = swe.julday(year, month, day, ut)
 
@@ -70,10 +70,7 @@ def chart():
         "saturn": swe.SATURN,
         "uranus": swe.URANUS,
         "neptune": swe.NEPTUNE,
-        "pluto": swe.PLUTO,
-        "chiron": swe.CHIRON,
-        "north_node": swe.TRUE_NODE,
-        "lilith": swe.MEAN_APOG
+        "pluto": swe.PLUTO
     }
 
     result = {}
@@ -87,18 +84,6 @@ def chart():
             "degree": round(lon % 30, 4),
             "longitude": round(lon, 6)
         }
-# South Node (opposite the North Node)
-
-south_lon = (result["north_node"]["longitude"] + 180) % 360
-
-result["south_node"] = {
-    "sign": get_sign(south_lon),
-    "degree": round(south_lon % 30, 4),
-    "longitude": round(south_lon, 6)
-}
-
-
-
 
     houses = swe.houses_ex(
         jd,
