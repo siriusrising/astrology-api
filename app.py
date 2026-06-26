@@ -89,6 +89,18 @@ def chart():
             "degree": round(lon % 30, 4),
             "longitude": round(lon, 6)
         }
+# South Node (opposite the North Node)
+
+south_lon = (result["north_node"]["longitude"] + 180) % 360
+
+result["south_node"] = {
+    "sign": get_sign(south_lon),
+    "degree": round(south_lon % 30, 4),
+    "longitude": round(south_lon, 6)
+}
+
+
+
 
     houses = swe.houses_ex(
         jd,
