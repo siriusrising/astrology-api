@@ -60,18 +60,19 @@ def chart():
 
     jd = swe.julday(year, month, day, ut)
 
-    planets = {
-        "sun": swe.SUN,
-        "moon": swe.MOON,
-        "mercury": swe.MERCURY,
-        "venus": swe.VENUS,
-        "mars": swe.MARS,
-        "jupiter": swe.JUPITER,
-        "saturn": swe.SATURN,
-        "uranus": swe.URANUS,
-        "neptune": swe.NEPTUNE,
-        "pluto": swe.PLUTO
-    }
+  planets = {
+    "sun": swe.SUN,
+    "moon": swe.MOON,
+    "mercury": swe.MERCURY,
+    "venus": swe.VENUS,
+    "mars": swe.MARS,
+    "jupiter": swe.JUPITER,
+    "saturn": swe.SATURN,
+    "uranus": swe.URANUS,
+    "neptune": swe.NEPTUNE,
+    "pluto": swe.PLUTO,
+    "chiron": swe.CHIRON
+}
 
     result = {}
 
