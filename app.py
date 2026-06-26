@@ -71,8 +71,6 @@ def chart():
         "uranus": swe.URANUS,
         "neptune": swe.NEPTUNE,
         "pluto": swe.PLUTO,
-
-        # Modern astrology points
         "chiron": swe.CHIRON,
         "north_node": swe.TRUE_NODE,
         "lilith": swe.MEAN_APOG
