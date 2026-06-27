@@ -1,16 +1,51 @@
-@app.route("/chart-page")
-def chart_page():
-    # Same parameters as /chart
+import os
+import logging
+
+from flask import Flask, request, Response, jsonify
+from kerykeion import AstrologicalSubjectFactory
+from kerykeion.chart_data_factory import ChartDataFactory
+from kerykeion.charts.chart_drawer import ChartDrawer
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+
+GEONAMES_USERNAME = os.environ.get("GEONAMES_USERNAME", "siriusrising")
+
+
+@app.route("/")
+def index():
+    return "Kerykeion API is running"
+
+
+# DO NOT MODIFY - known-good diagnostic endpoint
+@app.route("/test")
+def test():
+    subject = AstrologicalSubjectFactory.from_birth_data(
+        name="Test Subject",
+        year=1957, month=1, day=20, hour=9, minute=0,
+        lng=-4.1974, lat=55.9742,
+        tz_str="Europe/London",
+        online=False,
+    )
+    chart_data = ChartDataFactory.create_natal_chart_data(subject)
+    drawer = ChartDrawer(chart_data=chart_data)
+    return Response(drawer.generate_svg_string(), mimetype="image/svg+xml")
+
+
+@app.route("/chart")
+def chart():
     errors = []
     def get_int(param):
         raw = request.args.get(param)
         if raw is None:
-            errors.append(f"Missing: {param}")
+            errors.append(f"Missing required parameter: {param}")
             return None
         try:
             return int(raw)
         except ValueError:
-            errors.append(f"Invalid: {param}")
+            errors.append(f"Parameter '{param}' must be an integer, got: {raw!r}")
             return None
 
     year   = get_int("year")
@@ -18,11 +53,52 @@ def chart_page():
     day    = get_int("day")
     hour   = get_int("hour")
     minute = get_int("minute")
-    city    = request.args.get("city", "").strip()
+    city    = request.args.get("city",    "").strip()
     country = request.args.get("country", "").strip()
-    name    = request.args.get("name", "Chart").strip()
+    name    = request.args.get("name",    "Chart").strip()
 
-    if errors or not city or not country:
+    if not city:
+        errors.append("Missing required parameter: city")
+    if not country:
+        errors.append("Missing required parameter: country")
+    if errors:
+        return jsonify({"error": "Invalid parameters", "details": errors}), 400
+
+    try:
+        subject = AstrologicalSubjectFactory.from_birth_data(
+            name=name, year=year, month=month, day=day,
+            hour=hour, minute=minute,
+            city=city, nation=country,
+            geonames_username=GEONAMES_USERNAME,
+            online=True,
+        )
+    except Exception as exc:
+        logger.exception("GeoNames / subject creation failed")
+        return jsonify({"error": "Could not resolve location.", "detail": str(exc)}), 500
+
+    try:
+        chart_data = ChartDataFactory.create_natal_chart_data(subject)
+        drawer = ChartDrawer(chart_data=chart_data)
+        svg_string = drawer.generate_svg_string()
+    except Exception as exc:
+        logger.exception("Chart generation failed")
+        return jsonify({"error": "Chart generation failed.", "detail": str(exc)}), 500
+
+    return Response(svg_string, mimetype="image/svg+xml")
+
+
+@app.route("/chart-page")
+def chart_page():
+    year   = request.args.get("year",   type=int)
+    month  = request.args.get("month",  type=int)
+    day    = request.args.get("day",    type=int)
+    hour   = request.args.get("hour",   type=int)
+    minute = request.args.get("minute", type=int)
+    city    = request.args.get("city",    "").strip()
+    country = request.args.get("country", "").strip()
+    name    = request.args.get("name",    "Chart").strip()
+
+    if not all([year, month, day, hour is not None, minute is not None, city, country]):
         return "<p>Missing parameters</p>", 400
 
     try:
@@ -40,15 +116,12 @@ def chart_page():
         return f"<p>Error: {exc}</p>", 500
 
     html = f"""<!DOCTYPE html>
-<html>
-<head>
-<style>
-  body {{ margin: 0; padding: 0; }}
-  svg {{ width: 100%; height: auto; }}
-</style>
-</head>
-<body>
-{svg_string}
-</body>
-</html>"""
+<html><head><style>
+body {{ margin: 0; padding: 0; }}
+svg {{ width: 100%; height: auto; }}
+</style></head><body>{svg_string}</body></html>"""
     return Response(html, mimetype="text/html")
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
