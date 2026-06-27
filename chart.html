@@ -1,32 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { margin: 0; padding: 0; background: transparent; }
-    #chart-container svg { width: 100%; height: auto; }
-    #status { font-family: sans-serif; padding: 10px; color: #666; }
-  </style>
-</head>
-<body>
-  <div id="status">Loading chart...</div>
-  <div id="chart-container"></div>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const chartUrl = params.get("chartUrl");
+<style>
+  body { margin: 0; padding: 0; background: #f9f5ef; }
+  #status { font-family: sans-serif; padding: 20px; color: #666; text-align: center; }
+  #chart-container svg { width: 100%; height: auto; }
+</style>
+<div id="status">Loading chart...</div>
+<div id="chart-container"></div>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const chartUrl = params.get("chartUrl");
 
-    if (chartUrl) {
-      fetch(chartUrl)
-        .then(r => r.text())
-        .then(svg => {
-          document.getElementById("status").innerText = "";
-          document.getElementById("chart-container").innerHTML = svg;
-        })
-        .catch(err => {
-          document.getElementById("status").innerText = "Error: " + err.message;
-        });
-    } else {
-      document.getElementById("status").innerText = "No chart data received.";
-    }
-  </script>
-</body>
-</html>
+  if (chartUrl) {
+    fetch(chartUrl)
+      .then(r => r.text())
+      .then(svg => {
+        document.getElementById("status").innerText = "";
+        document.getElementById("chart-container").innerHTML = svg;
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "Error: " + err.message;
+      });
+  } else {
+    document.getElementById("status").innerText = "Waiting for chart data...";
+  }
+</script>
