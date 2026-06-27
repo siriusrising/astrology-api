@@ -5,21 +5,32 @@
     body { margin: 0; padding: 0; background: transparent; }
     #chart-container { width: 100%; }
     #chart-container svg { width: 100%; height: auto; }
+    #status { font-family: sans-serif; padding: 10px; color: #666; }
   </style>
 </head>
 <body>
-  <div id="chart-container">Loading chart...</div>
+  <div id="status">Waiting for chart data...</div>
+  <div id="chart-container"></div>
   <script>
     window.addEventListener("message", function(event) {
-      const url = event.data.chartUrl;
+      console.log("Message received:", event.data);
+      
+      const url = event.data && event.data.chartUrl;
       if (!url) return;
+
+      document.getElementById("status").innerText = "Loading chart from API...";
+
       fetch(url)
-        .then(r => r.text())
+        .then(r => {
+          if (!r.ok) throw new Error("API returned " + r.status);
+          return r.text();
+        })
         .then(svg => {
+          document.getElementById("status").innerText = "";
           document.getElementById("chart-container").innerHTML = svg;
         })
-        .catch(() => {
-          document.getElementById("chart-container").innerHTML = "Error loading chart.";
+        .catch(err => {
+          document.getElementById("status").innerText = "Error: " + err.message;
         });
     });
   </script>
