@@ -1,25 +1,54 @@
-<style>
-  body { margin: 0; padding: 0; background: #f9f5ef; }
-  #status { font-family: sans-serif; padding: 20px; color: #666; text-align: center; }
-  #chart-container svg { width: 100%; height: auto; }
-</style>
-<div id="status">Loading chart...</div>
-<div id="chart-container"></div>
-<script>
-  const params = new URLSearchParams(window.location.search);
-  const chartUrl = params.get("chartUrl");
+@app.route("/chart-page")
+def chart_page():
+    # Same parameters as /chart
+    errors = []
+    def get_int(param):
+        raw = request.args.get(param)
+        if raw is None:
+            errors.append(f"Missing: {param}")
+            return None
+        try:
+            return int(raw)
+        except ValueError:
+            errors.append(f"Invalid: {param}")
+            return None
 
-  if (chartUrl) {
-    fetch(chartUrl)
-      .then(r => r.text())
-      .then(svg => {
-        document.getElementById("status").innerText = "";
-        document.getElementById("chart-container").innerHTML = svg;
-      })
-      .catch(err => {
-        document.getElementById("status").innerText = "Error: " + err.message;
-      });
-  } else {
-    document.getElementById("status").innerText = "Waiting for chart data...";
-  }
-</script>
+    year   = get_int("year")
+    month  = get_int("month")
+    day    = get_int("day")
+    hour   = get_int("hour")
+    minute = get_int("minute")
+    city    = request.args.get("city", "").strip()
+    country = request.args.get("country", "").strip()
+    name    = request.args.get("name", "Chart").strip()
+
+    if errors or not city or not country:
+        return "<p>Missing parameters</p>", 400
+
+    try:
+        subject = AstrologicalSubjectFactory.from_birth_data(
+            name=name, year=year, month=month, day=day,
+            hour=hour, minute=minute,
+            city=city, nation=country,
+            geonames_username=GEONAMES_USERNAME,
+            online=True,
+        )
+        chart_data = ChartDataFactory.create_natal_chart_data(subject)
+        drawer = ChartDrawer(chart_data=chart_data)
+        svg_string = drawer.generate_svg_string()
+    except Exception as exc:
+        return f"<p>Error: {exc}</p>", 500
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {{ margin: 0; padding: 0; }}
+  svg {{ width: 100%; height: auto; }}
+</style>
+</head>
+<body>
+{svg_string}
+</body>
+</html>"""
+    return Response(html, mimetype="text/html")
