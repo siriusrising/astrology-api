@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { margin: 0; padding: 0; background: transparent; }
+    #chart-container { width: 100%; }
+    #chart-container svg { width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <div id="chart-container">Loading chart...</div>
+  <script>
+    window.addEventListener("message", function(event) {
+      const url = event.data.chartUrl;
+      if (!url) return;
+      fetch(url)
+        .then(r => r.text())
+        .then(svg => {
+          document.getElementById("chart-container").innerHTML = svg;
+        })
+        .catch(() => {
+          document.getElementById("chart-container").innerHTML = "Error loading chart.";
+        });
+    });
+  </script>
+</body>
+</html>
